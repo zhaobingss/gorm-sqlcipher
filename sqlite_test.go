@@ -46,24 +46,58 @@ func TestNormal(t *testing.T) {
 
 func TestEncrypt(t *testing.T) {
 
-	//key := "2DD29CA851E7B56E4697B0E1F08507293D761A05CE4D1B628663F411A8086D99"
-	//dbname := fmt.Sprintf("test.db?_pragma_key=x'%s'&_pragma_cipher_page_size=4096", key)
+	/** SQLCipher 3 默认值
+	PRAGMA cipher_page_size = 1024;
+	PRAGMA kdf_iter = 4000;
+	PRAGMA cipher_kdf_algorithm = PBKDF2_HMAC_SHA1;
+	PRAGMA cipher_hmac_algorithm = HMAC_SHA1;
+	*/
+
 	/**
-		SQLCipher 4 默认值,好多软件打不开db文件
-		PRAGMA cipher_page_size = 4096;
-		PRAGMA kdf_iter = 256000;
-		PRAGMA cipher_hmac_algorithm = HMAC_SHA512;
-		PRAGMA cipher_kdf_algorithm = PBKDF2_HMAC_SHA512;
-	 */
-	dbname := "users.db"
+	SQLCipher 4 默认值,好多软件打不开db文件
+	PRAGMA cipher_page_size = 4096;
+	PRAGMA kdf_iter = 256000;
+	PRAGMA cipher_kdf_algorithm = PBKDF2_HMAC_SHA512;
+	PRAGMA cipher_hmac_algorithm = HMAC_SHA512;
+	*/
+
+
+	// 1、参数的方式
+	// github.com/mutecomm/go-sqlcipher/v4 v4.4.2
+	// 下面这种加密方式，只适合v4.4.2版本
+	//key := "2DD29CA851E7B56E4697B0E1F08507293D761A05CE4D1B628663F411A8086D99"
+	dbname := fmt.Sprintf("users.db?" +
+		"_pragma_key=%s" +
+		"&_pragma_cipher_page_size=%s" +
+		"&_pragma_kdf_iter=%s" +
+		"&_pragma_cipher_kdf_algorithm=%s" +
+		"&_pragma_cipher_hmac_algorithm=%s" +
+		"&_pragma_cipher_use_hmac=%s","12345", "1024", "4000", "PBKDF2_HMAC_SHA1", "HMAC_SHA1", "OFF")
+	db, _ := gorm.Open(Open(dbname), nil)
+
+	// 2、语句的方式
+	// github.com/mutecomm/go-sqlcipher/v4 v4.4.0
+	// 下面这种加密方式，只适合v4.4.0版本
+
+	/*dbname := "users.db"
 	db, _ := gorm.Open(Open(dbname), nil)
 	db.Exec(`
 		PRAGMA key = 123456;
 		PRAGMA cipher_page_size = 1024;
 		PRAGMA kdf_iter = 4000;
-		PRAGMA cipher_hmac_algorithm = HMAC_SHA1;
 		PRAGMA cipher_kdf_algorithm = PBKDF2_HMAC_SHA1;
+		PRAGMA cipher_hmac_algorithm = HMAC_SHA1;
 		PRAGMA cipher_use_hmac = OFF;
+	`)*/
+
+
+	// 执行sql
+	db.Exec(`
+		CREATE TABLE IF NOT EXISTS users(id INTEGER, name VARCHAR(100));
+	`)
+
+	db.Exec(`
+		INSERT INTO users(id, name) VALUES (1, '张三');
 	`)
 
 	rows, err := db.Raw(`SELECT * FROM users;`).Rows()
