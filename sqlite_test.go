@@ -65,14 +65,9 @@ func TestEncrypt(t *testing.T) {
 	// 1、参数的方式
 	// github.com/mutecomm/go-sqlcipher/v4 v4.4.2
 	// 下面这种加密方式，只适合v4.4.2版本
+	// 注意只有 _pragma_key 和 _pragma_cipher_page_size 起作用，其他的是不起作用的
 	//key := "2DD29CA851E7B56E4697B0E1F08507293D761A05CE4D1B628663F411A8086D99"
-	dbname := fmt.Sprintf("users.db?" +
-		"_pragma_key=%s" +
-		"&_pragma_cipher_page_size=%s" +
-		"&_pragma_kdf_iter=%s" +
-		"&_pragma_cipher_kdf_algorithm=%s" +
-		"&_pragma_cipher_hmac_algorithm=%s" +
-		"&_pragma_cipher_use_hmac=%s","12345", "1024", "4000", "PBKDF2_HMAC_SHA1", "HMAC_SHA1", "OFF")
+	dbname := fmt.Sprintf("users.db?_pragma_key=%s&_pragma_cipher_page_size=%s","12345", "1024")
 	db, _ := gorm.Open(Open(dbname), nil)
 
 	// 2、语句的方式
