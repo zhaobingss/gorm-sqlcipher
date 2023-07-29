@@ -1,2 +1,6 @@
 *.db
 *.exe
+/TestEncrypt_in_github_com_zhaobingss_gorm_sqlcipher.test
+/normal_test.test
+/encrypt_test.test
+.idea
